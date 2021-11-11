@@ -3,7 +3,7 @@ This repository contains a server filled with challenges ranging from simple ins
 It also contains a client to communicate with it.
 
 ## Installation
-Run the *make install* command to create the output folder as follows:
+Run the *make install* command to create the bin folder as follows:
 
 ```python
 user@linux:$ make install
