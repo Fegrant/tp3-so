@@ -6,6 +6,10 @@ int main(){
     socklen_t sock_optlen = 4;
     socklen_t clisock_len = sizeof(struct sockaddr);
 
+    char answer[MAX_READ_BYTES];
+
+    struct stat file_stat;
+
     struct sockaddr_in server;
     struct sockaddr_in client;
 
@@ -38,7 +42,28 @@ int main(){
         return -1;
     }
 
-    printf("Hola y adios\n");
+    printf("------------- DESAFIO -------------");
+    printf("\n");
+
+    printf("Bienvenidos al TP3 y felicitaciones, ya resolvieron el primer acertijo.\n"
+    "En este TP deberán finalizar el juego que ya comenzaron resolviendo los desafíos de cada nivel.\n"
+    "Además tendrán que investigar otras preguntas para responder durante la defensa.\n"
+    "El desafío final consiste en crear un programa que se comporte igual que yo, es decir, que provea los mismos desafíos "
+    "y que sea necesario hacer lo mismo para resolverlos. No basta con esperar la respuesta.\n"
+    "Además, deberán implementar otro programa para comunicarse conmigo\n\n"
+    "Deberán estar atentos a los easter eggs.\n\n"
+    "Para verificar que sus respuestas tienen el formato correcto respondan a este desafio con la palabra 'entendido\\n'\n");
+
+    if(fstat(clisock_fd, &file_stat) == -1){
+        printf("Error retrieving file descriptor info\n");
+    }
+
+    read(clisock_fd, (void*)&answer, MAX_READ_BYTES);
+    if(strncmp(answer, "entendido\n", MAX_READ_BYTES) != 0)
+        printf("RESPUESTA EQUIVOCADA\n");
+    else
+        printf("RESPUESTA CORRECTA\n");
+
     close(servsock_fd);
     close(clisock_fd);
     return 0;
