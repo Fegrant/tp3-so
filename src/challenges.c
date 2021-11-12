@@ -19,7 +19,7 @@ char userAnswer[MAX_READ_BYTES] = {0};
 int pipefd[] = {PIPE_READ_FD, PIPE_WRITE_FD};
 int current = 0;
 
-int naiveChallenge();
+int naiveChallenge() __attribute__((section(".RUN_ME")));
 int badFileDescriptorChallenge();
 
 ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
@@ -35,7 +35,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
     { &badFileDescriptorChallenge, "fk3wfLCm3QvS\n", "................................La respuesta es fk3wfLCm3QvS\n", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
     { &naiveChallenge, "too_easy\n", "respuesta = strings:TBD\n\n", "¿Cómo garantiza TCP que los paquetes llegan en orden y no se pierden?\n"},
-    { &naiveChallenge, ".RUN_ME\n", ".data .bss .comment ? .shstrtab .symtab .strtab", "Un servidor suele crear un nuevo proceso o thread para atender las conexiones entrantes. ¿Qué conviene más?\n"},
+    { &naiveChallenge, ".RUN_ME\n", ".init .plt .text ? .fini .rodata .eh_frame_hdr", "Un servidor suele crear un nuevo proceso o thread para atender las conexiones entrantes. ¿Qué conviene más?\n"},
     { &naiveChallenge, "K5n2UFfpFMUN\n", "", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
     { &naiveChallenge, "BUmyYq5XxXGt\n", "", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
     { &naiveChallenge, "u^v\n", "", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
