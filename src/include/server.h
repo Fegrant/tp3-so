@@ -7,8 +7,13 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <strings.h>
+#include "challenges.h"
+
+typedef struct SockStruct {
+    int fd;
+    struct sockaddr_in socket;
+} SockStruct;
 
 #define MAX_CONNECTIONS 5
 #define SERVER_PORT 8080
 #define SERVER_ADDR "0.0.0.0"
-#define MAX_READ_BYTES 4096
