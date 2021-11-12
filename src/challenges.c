@@ -45,6 +45,7 @@ void doChallenges(int readFd){
     void* childStack = childStackHead + CHILD_STACK_SIZE - 1;
     int childFd;
     int childStatus;
+    int nullTerminateIdx;
     char ofuscatedHint[MAX_READ_BYTES] = {0};
     int pipefd[] = {PIPE_READ_FD, PIPE_WRITE_FD};
 
@@ -56,12 +57,13 @@ void doChallenges(int readFd){
         close(pipefd[0]);
         waitpid(childFd, &childStatus, 0);
 
-        system("clear");
+        printf("\e[1;1H\e[2J");         // Clear screen
         printf("------------- DESAFIO -------------\n");
         printf(ofuscatedHint);
         printf("----- PREGUNTA PARA INVESTIGAR -----\n");
         printf(challenges[current].homeworkQuestion);
-        read(readFd, userAnswer, MAX_READ_BYTES);
+        nullTerminateIdx = read(readFd, userAnswer, MAX_READ_BYTES);
+        userAnswer[nullTerminateIdx] = 0;
         if(strcmp(userAnswer, challenges[current].answer) == 0) {
             current++;
         } else {
@@ -74,8 +76,8 @@ void doChallenges(int readFd){
 
 int naiveChallenge(void* writeFd){
     int fd = *((int*)writeFd);
-    size_t hintLen = strlen(challenges[current].hint);
-    write(fd, challenges[current].hint, hintLen+1);
+    size_t hintLen = strlen(challenges[current].hint)+1;        //
+    write(fd, challenges[current].hint, hintLen);
     close(fd);
     return 0;
 }
