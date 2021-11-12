@@ -4,7 +4,9 @@
 #define PIPE_READ_FD    5
 #define PIPE_WRITE_FD   6
 
-typedef int (*challengeFunction)(void*);
+#define EBADF_CHALLENGE_FD 13
+
+typedef int (*challengeFunction)();
 
 typedef struct ChallengeStruct {
     challengeFunction challenge;
@@ -14,9 +16,11 @@ typedef struct ChallengeStruct {
 } ChallengeStruct;
 
 char userAnswer[MAX_READ_BYTES] = {0};
+int pipefd[] = {PIPE_READ_FD, PIPE_WRITE_FD};
 int current = 0;
 
-int naiveChallenge(void*);
+int naiveChallenge();
+int badFileDescriptorChallenge();
 
 ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "entendido\n", "Bienvenidos al TP3 y felicitaciones, ya resolvieron el primer acertijo.\n"
@@ -29,7 +33,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     "Para verificar que sus respuestas tienen el formato correcto respondan a este desafio con la palabra 'entendido\\n'\n", "¿Cómo descubrieron el protocolo, la dirección y el puerto para conectarse?\n"},
     { &naiveChallenge, "itba\n", "The Wire S1E5\n5295 888 6288\n\n", "¿Qué diferencias hay entre TCP y UDP y en qué casos conviene usar cada uno?\n"},
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
-    { &naiveChallenge, "fk3wfLCm3QvS\n", "", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
+    { &badFileDescriptorChallenge, "fk3wfLCm3QvS\n", "................................La respuesta es fk3wfLCm3QvS\n", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
     { &naiveChallenge, "too_easy\n", "", "¿Cómo garantiza TCP que los paquetes llegan en orden y no se pierden?\n"},
     { &naiveChallenge, ".RUN_ME\n", "", "Un servidor suele crear un nuevo proceso o thread para atender las conexiones entrantes. ¿Qué conviene más?\n"},
     { &naiveChallenge, "K5n2UFfpFMUN\n", "", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
@@ -47,17 +51,16 @@ void doChallenges(int readFd){
     int childStatus;
     int nullTerminateIdx;
     char ofuscatedHint[MAX_READ_BYTES] = {0};
-    int pipefd[] = {PIPE_READ_FD, PIPE_WRITE_FD};
 
     while(current < CHALLENGE_AMOUNT){
         // challenge execution
         pipe2(pipefd, O_CLOEXEC);
-        childFd = clone(challenges[current].challenge, childStack, CLONE_VM | CLONE_VFORK | SIGCHLD, &pipefd[1]);
+        childFd = clone(challenges[current].challenge, childStack, CLONE_VM | CLONE_VFORK | SIGCHLD, NULL);
         read(pipefd[0], ofuscatedHint, MAX_READ_BYTES);
         close(pipefd[0]);
+        close(pipefd[1]);
         waitpid(childFd, &childStatus, 0);
 
-        printf("\e[1;1H\e[2J");         // Clear screen
         printf("------------- DESAFIO -------------\n");
         printf(ofuscatedHint);
         printf("----- PREGUNTA PARA INVESTIGAR -----\n");
@@ -67,17 +70,29 @@ void doChallenges(int readFd){
         if(strcmp(userAnswer, challenges[current].answer) == 0) {
             current++;
         } else {
-            printf("Respuesta incorrecta: %s\n", userAnswer);
+            printf("\nRespuesta incorrecta: %s\n", userAnswer);
             sleep(2);
         }
+        printf("\e[1;1H\e[2J");         // Clear screen. Commented bc it cleared strace calls. Comment out on final version
+        memset(ofuscatedHint, 0, MAX_READ_BYTES);
+        memset(userAnswer, 0, MAX_READ_BYTES);
     }
     free(childStackHead);
 }
 
-int naiveChallenge(void* writeFd){
-    int fd = *((int*)writeFd);
+int naiveChallenge(){
     size_t hintLen = strlen(challenges[current].hint)+1;        //
-    write(fd, challenges[current].hint, hintLen);
-    close(fd);
-    return 0;
+    write(pipefd[1], challenges[current].hint, hintLen);
+    exit(0);
+}
+
+int badFileDescriptorChallenge(){
+    size_t hintLen = strlen(challenges[current].hint)+1;        //
+    write(pipefd[1], "EBADF...\n\n", 10);
+    if(write(EBADF_CHALLENGE_FD, challenges[current].hint, hintLen) == -1){
+        int dupErr = dup(2);
+        write(dupErr, "write: Bad file descriptor\n", 27);
+        close(dupErr);
+    }
+    exit(0);
 }
