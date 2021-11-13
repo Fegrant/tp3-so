@@ -1,6 +1,7 @@
 #include "include/challenges.h"
 
 #define CHILD_STACK_SIZE 36864
+
 #define PIPE_READ_FD    5
 #define PIPE_WRITE_FD   6
 
@@ -21,6 +22,8 @@ int current = 0;
 
 int naiveChallenge() __attribute__((section(".RUN_ME")));
 int badFileDescriptorChallenge();
+int filterChallenge();
+int hideAnswerChallenge();
 
 ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "entendido\n", "Bienvenidos al TP3 y felicitaciones, ya resolvieron el primer acertijo.\n"
@@ -35,9 +38,9 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
     { &badFileDescriptorChallenge, "fk3wfLCm3QvS\n", "................................La respuesta es fk3wfLCm3QvS\n", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
     { &naiveChallenge, "too_easy\n", "respuesta = strings:TBD\n\n", "¿Cómo garantiza TCP que los paquetes llegan en orden y no se pierden?\n"},
-    { &naiveChallenge, ".RUN_ME\n", ".init .plt .text ? .fini .rodata .eh_frame_hdr", "Un servidor suele crear un nuevo proceso o thread para atender las conexiones entrantes. ¿Qué conviene más?\n"},
-    { &naiveChallenge, "K5n2UFfpFMUN\n", "", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
-    { &naiveChallenge, "BUmyYq5XxXGt\n", "", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
+    { &naiveChallenge, ".RUN_ME\n", ".init .plt .text ? .fini .rodata .eh_frame_hdr\n\n", "Un servidor suele crear un nuevo proceso o thread para atender las conexiones entrantes. ¿Qué conviene más?\n"},
+    { &filterChallenge, "K5n2UFfpFMUN\n", "La respuesta es K5n2UFfpFMUN\n\n", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
+    { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
     { &naiveChallenge, "u^v\n", "", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
     { &naiveChallenge, "chin_chu_lan_cha\n", "", "¿Cuáles son las características del protocolo SCTP?\n"},
     { &naiveChallenge, "gdb_rules\n", "", "¿Qué es un RFC?\n"},
@@ -52,7 +55,11 @@ void doChallenges(int readFd){
     int nullTerminateIdx;
     char ofuscatedHint[MAX_READ_BYTES] = {0};
 
+    srand((unsigned)time(NULL));
+
     while(current < CHALLENGE_AMOUNT){
+        printf("------------- DESAFIO -------------\n");
+
         // challenge execution
         pipe2(pipefd, O_CLOEXEC);
         childFd = clone(challenges[current].challenge, childStack, CLONE_VM | CLONE_VFORK | SIGCHLD, NULL);
@@ -61,7 +68,6 @@ void doChallenges(int readFd){
         close(pipefd[1]);
         waitpid(childFd, &childStatus, 0);
 
-        printf("------------- DESAFIO -------------\n");
         printf(ofuscatedHint);
         printf("----- PREGUNTA PARA INVESTIGAR -----\n");
         printf(challenges[current].homeworkQuestion);
@@ -94,5 +100,36 @@ int badFileDescriptorChallenge(){
         write(dupErr, "write: Bad file descriptor\n", 27);
         close(dupErr);
     }
+    exit(0);
+}
+
+int filterChallenge(){
+    size_t hintLen = strlen(challenges[current].hint);
+    write(pipefd[1], "Filter error\n\n", 15);             // Don´t write EOF
+    int dupStdOut = dup(1);
+    int dupErr = dup(2);
+    char randCharArr[1];
+
+    for(int i=0 ; i < hintLen-2 ; i++){         // Doesn´t take into account \n\n
+        int randLen = (rand() % 5) + 4;
+        for(int j=0 ; j < randLen ; j++){
+            randCharArr[0] = (rand() % 94) + 32;
+            write(dupErr, randCharArr, 1);
+        }
+        write(dupStdOut, challenges[current].hint+i, 1);
+    }
+    write(dupStdOut, challenges[current].hint + (hintLen-2), 3);
+
+    close(dupStdOut);
+    close(dupErr);
+    exit(0);
+}
+
+int hideAnswerChallenge(){
+    size_t hintLen = strlen(challenges[current].hint);
+    write(pipefd[1], challenges[current].hint, 4);      // Prints '¿?\n\n'
+    write(pipefd[1], "\033[30;2m", 7);                  // Conceals text
+    write(pipefd[1], challenges[current].hint+4, hintLen-4);
+    write(pipefd[1], "\033[0m", 5);                 // Conceal effect off
     exit(0);
 }

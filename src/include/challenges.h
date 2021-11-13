@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 #define CHALLENGE_AMOUNT 12
 #define MAX_READ_BYTES 4096
