@@ -17,3 +17,4 @@
 #define MAX_READ_BYTES 4096
 
 void doChallenges(int readFd);
+extern void gdbme(int writeFd, char* answerBase, char* answerValue, char* badAnswer);

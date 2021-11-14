@@ -24,6 +24,7 @@ int naiveChallenge() __attribute__((section(".RUN_ME")));
 int badFileDescriptorChallenge();
 int filterChallenge();
 int hideAnswerChallenge();
+int gdbChallenge();
 int normalDistributionChallenge();
 
 ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
@@ -35,6 +36,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     "Además, deberán implementar otro programa para comunicarse conmigo\n\n"
     "Deberán estar atentos a los easter eggs.\n\n"
     "Para verificar que sus respuestas tienen el formato correcto respondan a este desafio con la palabra 'entendido\\n'\n", "¿Cómo descubrieron el protocolo, la dirección y el puerto para conectarse?\n"},
+    { &gdbChallenge, "gdb_rules\n", "b gdbme y encontrá el valor mágico\n\n", "¿Qué es un RFC?\n"},
     { &naiveChallenge, "itba\n", "The Wire S1E5\n5295 888 6288\n\n", "¿Qué diferencias hay entre TCP y UDP y en qué casos conviene usar cada uno?\n"},
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
     { &badFileDescriptorChallenge, "fk3wfLCm3QvS\n", "................................La respuesta es fk3wfLCm3QvS\n", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
@@ -44,7 +46,6 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
     { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
     { &naiveChallenge, "chin_chu_lan_cha\n", "", "¿Cuáles son las características del protocolo SCTP?\n"},
-    { &naiveChallenge, "gdb_rules\n", "", "¿Qué es un RFC?\n"},
     { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"}
 };
 
@@ -157,6 +158,16 @@ double randn (double mu, double sigma) {
     X2 = U2 * mult;
     call = !call;
     return (mu + sigma*(double)X1);
+}
+
+int gdbChallenge(){
+    size_t hintLen = strlen(challenges[current].hint);
+    char* badAnswerResponse = "ENTER para reintentar.\n";
+    char* answerBase = "La respuesta es ";
+    write(pipefd[1], challenges[current].hint, hintLen);
+    gdbme(pipefd[1], answerBase, challenges[current].answer, badAnswerResponse);
+    write(pipefd[1], "\n", 2);
+    exit(0);
 }
 
 int normalDistributionChallenge(){
