@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
     fd_set writefd;
     FD_ZERO(&writefd);
     FD_SET(server.fd,&writefd);
+    
     connect(server.fd,(struct sockaddr*)&server.socket, sizeof(struct sockaddr));
     
     if(select(4,NULL,&writefd,NULL,NULL) == -1 ) {
@@ -39,7 +40,7 @@ int main(int argc, char *argv[]) {
     }
     char buffer[SIZE_BUFFER];
     int buffer_size = 0;
-    for(int current = 0; current < 5; current++) {
+    while(1) {
     poll(pollfd, 4, -1);
         if(pollfd[0].revents == POLLIN) {
             buffer_size = read(0,buffer,SIZE_BUFFER);
