@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "server.h": "c",
+        "socket.h": "c",
+        "in.h": "c",
+        "stat.h": "c",
+        "challenges.h": "c",
+        "stdlib.h": "c",
+        "math.h": "c",
+        "time.h": "c"
+    }
+}

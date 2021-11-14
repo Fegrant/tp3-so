@@ -24,6 +24,7 @@ int naiveChallenge() __attribute__((section(".RUN_ME")));
 int badFileDescriptorChallenge();
 int filterChallenge();
 int hideAnswerChallenge();
+int normalDistributionChallenge();
 
 ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "entendido\n", "Bienvenidos al TP3 y felicitaciones, ya resolvieron el primer acertijo.\n"
@@ -44,7 +45,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
     { &naiveChallenge, "chin_chu_lan_cha\n", "", "¿Cuáles son las características del protocolo SCTP?\n"},
     { &naiveChallenge, "gdb_rules\n", "", "¿Qué es un RFC?\n"},
-    { &naiveChallenge, "normal\n", "", "¿Fue divertido?"}
+    { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"}
 };
 
 void doChallenges(int readFd){
@@ -128,8 +129,41 @@ int filterChallenge(){
 int hideAnswerChallenge(){
     size_t hintLen = strlen(challenges[current].hint);
     write(pipefd[1], challenges[current].hint, 4);      // Prints '¿?\n\n'
-    write(pipefd[1], "\033[8m", 4);                  // Conceals text
+    write(pipefd[1], "\033[30;40m", 7);                  // Conceals text
     write(pipefd[1], challenges[current].hint+4, hintLen-4);
-    write(pipefd[1], "\033[28m", 5);                 // Conceal effect off
+    write(pipefd[1], "\033[0m", 5);                 // Conceal effect off
+    exit(0);
+}
+
+// Normal random function obtained from https://phoxis.org/2013/05/04/generating-random-numbers-from-normal-distribution-in-c/
+double randn (double mu, double sigma) {
+    double U1, U2, W, mult;
+    static double X1, X2;
+    static int call = 0;
+
+    if (call == 1) {
+        call = !call;
+        return (mu + sigma*(double)X2);
+    }
+ 
+    do {
+        U1 = -1 + ((double)rand() / RAND_MAX)*2;
+        U2 = -1 + ((double)rand() / RAND_MAX)*2;
+        W = pow(U1, 2) + pow(U2, 2);
+    } while (W >= 1 || W == 0);
+ 
+    mult = sqrt((-2*log(W)) / W);
+    X1 = U1 * mult;
+    X2 = U2 * mult;
+    call = !call;
+    return (mu + sigma*(double)X1);
+}
+
+int normalDistributionChallenge(){
+    size_t hintLen = strlen(challenges[current].hint)+1;        //
+    write(pipefd[1], challenges[current].hint, hintLen);
+    for (int i=0;i<1000;i++){
+        sprintf(pipefd[1], "%.6f ", randn(0, 1));
+    }
     exit(0);
 }
