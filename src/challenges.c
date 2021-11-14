@@ -41,7 +41,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, ".RUN_ME\n", ".init .plt .text ? .fini .rodata .eh_frame_hdr\n\n", "Un servidor suele crear un nuevo proceso o thread para atender las conexiones entrantes. ¿Qué conviene más?\n"},
     { &filterChallenge, "K5n2UFfpFMUN\n", "La respuesta es K5n2UFfpFMUN\n\n", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
     { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
-    { &naiveChallenge, "u^v\n", "", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
+    { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
     { &naiveChallenge, "chin_chu_lan_cha\n", "", "¿Cuáles son las características del protocolo SCTP?\n"},
     { &naiveChallenge, "gdb_rules\n", "", "¿Qué es un RFC?\n"},
     { &naiveChallenge, "normal\n", "", "¿Fue divertido?"}
@@ -128,8 +128,8 @@ int filterChallenge(){
 int hideAnswerChallenge(){
     size_t hintLen = strlen(challenges[current].hint);
     write(pipefd[1], challenges[current].hint, 4);      // Prints '¿?\n\n'
-    write(pipefd[1], "\033[30;2m", 7);                  // Conceals text
+    write(pipefd[1], "\033[8m", 4);                  // Conceals text
     write(pipefd[1], challenges[current].hint+4, hintLen-4);
-    write(pipefd[1], "\033[0m", 5);                 // Conceal effect off
+    write(pipefd[1], "\033[28m", 5);                 // Conceal effect off
     exit(0);
 }
