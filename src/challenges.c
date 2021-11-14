@@ -128,8 +128,8 @@ int filterChallenge(){
 int hideAnswerChallenge(){
     size_t hintLen = strlen(challenges[current].hint);
     write(pipefd[1], challenges[current].hint, 4);      // Prints '¿?\n\n'
-    write(pipefd[1], "\033[30;40m", 7);                  // Conceals text
+    write(pipefd[1], "\033[8m", 4);                  // Conceals text
     write(pipefd[1], challenges[current].hint+4, hintLen-4);
-    write(pipefd[1], "\033[0m", 5);                 // Conceal effect off
+    write(pipefd[1], "\033[28m", 5);                 // Conceal effect off
     exit(0);
 }
