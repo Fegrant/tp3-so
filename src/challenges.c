@@ -7,6 +7,8 @@
 
 #define EBADF_CHALLENGE_FD 13
 
+#define NORMAL_DATAPOINTS 1000
+
 typedef int (*challengeFunction)();
 
 typedef struct ChallengeStruct {
@@ -26,6 +28,9 @@ int filterChallenge();
 int hideAnswerChallenge();
 int gdbChallenge();
 int normalDistributionChallenge();
+int diffChallenge();
+
+char* quineAnswer = "#include<stdio.h>\nchar*i=\"\\\\#include<stdio.h>\",n=\'\\n\',q=\'\"\',*p=\n\"%s%cchar*i=%c%c%s%c,n=\'%cn\',q=\'%c\',*p=%c%c%s%c,*m=%c%c%s%c%c;%s%c\",*m=\n\"int main(){return!printf(p,i+1,n,q,*i,i,q,*i,q,n,q,p,q,n,q,m,q,n,m,n);}\"\n;int main(){return!printf(p,i+1,n,q,*i,i,q,*i,q,n,q,p,q,n,q,m,q,n,m,n);}";
 
 ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "entendido\n", "Bienvenidos al TP3 y felicitaciones, ya resolvieron el primer acertijo.\n"
@@ -45,7 +50,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &filterChallenge, "K5n2UFfpFMUN\n", "La respuesta es K5n2UFfpFMUN\n\n", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
     { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
     { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
-    { &naiveChallenge, "chin_chu_lan_cha\n", "", "¿Cuáles son las características del protocolo SCTP?\n"},
+    { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha", "¿Cuáles son las características del protocolo SCTP?\n"},
     { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"}
 };
 
@@ -173,8 +178,20 @@ int gdbChallenge(){
 int normalDistributionChallenge(){
     size_t hintLen = strlen(challenges[current].hint)+1;        //
     write(pipefd[1], challenges[current].hint, hintLen);
-    for (int i=0;i<1000;i++){
+    for (int i=0;i<NORMAL_DATAPOINTS;i++){
         sprintf(pipefd[1], "%.6f ", randn(0, 1));
+    }
+    exit(0);
+}
+
+int diffChallenge(){
+    size_t hintLen = strlen(challenges[current].hint)+1;        //
+    FILE* quineFile = fopen("./quine.c", "r");
+    char fileRead[500];
+    fgets(fileRead, 500, quineFile);
+    int diffResult = strcmp(quineAnswer, fileRead);
+    if (diffResult == 0){
+        write(pipefd[1], challenges[current].hint, hintLen);
     }
     exit(0);
 }
