@@ -7,9 +7,6 @@ int main(){
     socklen_t sock_optlen = 4;
     socklen_t clisock_len = sizeof(struct sockaddr);
 
-    char answer[MAX_READ_BYTES] = {0};
-
-    struct stat file_stat;
 
     server.socket.sin_family = AF_INET;
     server.socket.sin_port = htons(SERVER_PORT);
