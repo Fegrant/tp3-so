@@ -9,7 +9,6 @@ int main(){
     socklen_t sock_optlen = 4;
     socklen_t clisock_len = sizeof(struct sockaddr);
 
-
     server.socket.sin_family = AF_INET;
     server.socket.sin_port = htons(SERVER_PORT);
     server.socket.sin_addr.s_addr = inet_addr(SERVER_ADDR);

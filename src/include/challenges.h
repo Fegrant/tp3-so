@@ -12,6 +12,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include "auxLibrary.h"
 
 #define CHALLENGE_AMOUNT 12
 #define MAX_READ_BYTES 4096

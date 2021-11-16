@@ -9,7 +9,7 @@
 
 #define EBADF_CHALLENGE_FD 13
 
-#define NORMAL_DATAPOINTS 1000
+#define NORMAL_DATAPOINTS 400
 
 typedef int (*challengeFunction)();
 
@@ -44,7 +44,6 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     "Deberán estar atentos a los easter eggs.\n\n"
     "Para verificar que sus respuestas tienen el formato correcto respondan a este desafio con la palabra 'entendido\\n'\n", "¿Cómo descubrieron el protocolo, la dirección y el puerto para conectarse?\n"},
     { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"},
-    { &gdbChallenge, "gdb_rules\n", "b gdbme y encontrá el valor mágico\n\n", "¿Qué es un RFC?\n"},
     { &naiveChallenge, "itba\n", "The Wire S1E5\n5295 888 6288\n\n", "¿Qué diferencias hay entre TCP y UDP y en qué casos conviene usar cada uno?\n"},
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
     { &badFileDescriptorChallenge, "fk3wfLCm3QvS\n", "................................La respuesta es fk3wfLCm3QvS\n", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
@@ -53,7 +52,8 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &filterChallenge, "K5n2UFfpFMUN\n", "La respuesta es K5n2UFfpFMUN\n\n", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
     { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
     { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
-    { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha", "¿Cuáles son las características del protocolo SCTP?\n"}
+    { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha", "¿Cuáles son las características del protocolo SCTP?\n"},
+    { &gdbChallenge, "gdb_rules\n", "b gdbme y encontrá el valor mágico\n\n", "¿Qué es un RFC?\n"},
 };
 
 void doChallenges(int readFd){
@@ -164,7 +164,7 @@ double randn (double mu, double sigma) {
     static int call = 0;
 
     if (call == 1) {
-        call = !call;
+        call = 0;
         return (mu + sigma*(double)X2);
     }
  
@@ -192,17 +192,15 @@ int gdbChallenge(){
 }
 
 int normalDistributionChallenge(){
-    size_t hintLen = strlen(challenges[current].hint);        
+    size_t hintLen = strlen(challenges[current].hint);
     write(pipefd[1], challenges[current].hint, hintLen);
-    char buf[10];
-    printf("[DEBUG] before\n");
-    for(int i=0;i<1000;i++){
-        int len;
-        printf("[DEBUG] %d\n",i);
-        len = sprintf(buf, "%.6f ", randn(0, 1));
-        write(pipefd[1],buf,len);
+    char buf[10] = {0};
+    for(int i=0 ; i < NORMAL_DATAPOINTS ; i++){
+        // float printNum = randn(0, 1);
+        ftoa(randn(0, 1), buf, 6);
+        write(pipefd[1], buf, 8);
+        write(pipefd[1], " ", 1);
     }
-    printf("[DEBUG] after\n");
     write(pipefd[1],"\n",2);
     exit(0);
 }
