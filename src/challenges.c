@@ -43,7 +43,6 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     "Además, deberán implementar otro programa para comunicarse conmigo\n\n"
     "Deberán estar atentos a los easter eggs.\n\n"
     "Para verificar que sus respuestas tienen el formato correcto respondan a este desafio con la palabra 'entendido\\n'\n", "¿Cómo descubrieron el protocolo, la dirección y el puerto para conectarse?\n"},
-    { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"},
     { &naiveChallenge, "itba\n", "The Wire S1E5\n5295 888 6288\n\n", "¿Qué diferencias hay entre TCP y UDP y en qué casos conviene usar cada uno?\n"},
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
     { &badFileDescriptorChallenge, "fk3wfLCm3QvS\n", "................................La respuesta es fk3wfLCm3QvS\n", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
@@ -54,6 +53,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
     { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha", "¿Cuáles son las características del protocolo SCTP?\n"},
     { &gdbChallenge, "gdb_rules\n", "b gdbme y encontrá el valor mágico\n\n", "¿Qué es un RFC?\n"},
+    { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"}
 };
 
 void doChallenges(int readFd){
@@ -106,6 +106,7 @@ void doChallenges(int readFd){
         memset(ofuscatedHint, 0, MAX_READ_BYTES);
         memset(userAnswer, 0, MAX_READ_BYTES);
     }
+    printf("Felicitaciones, finalizaron el juego. Ahora deberán implementar el servidor que se comporte como el servidor provisto\n");
     free(childStackHead);
 }
 
@@ -151,9 +152,9 @@ int filterChallenge(){
 int hideAnswerChallenge(){
     size_t hintLen = strlen(challenges[current].hint);
     write(pipefd[1], challenges[current].hint, 4);      // Prints '¿?\n\n'
-    write(pipefd[1], "\033[30;40m", 7);                  // Conceals text
+    write(pipefd[1], "\033[8m", 4);                  // Conceals text
     write(pipefd[1], challenges[current].hint+4, hintLen-4);
-    write(pipefd[1], "\033[0m", 5);                 // Conceal effect off
+    write(pipefd[1], "\033[28m", 5);                 // Conceal effect off
     exit(0);
 }
 
