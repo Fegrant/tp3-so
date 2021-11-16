@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "include/challenges.h"
 
 #define CHILD_STACK_SIZE 36864
@@ -41,6 +43,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     "Además, deberán implementar otro programa para comunicarse conmigo\n\n"
     "Deberán estar atentos a los easter eggs.\n\n"
     "Para verificar que sus respuestas tienen el formato correcto respondan a este desafio con la palabra 'entendido\\n'\n", "¿Cómo descubrieron el protocolo, la dirección y el puerto para conectarse?\n"},
+    { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"},
     { &gdbChallenge, "gdb_rules\n", "b gdbme y encontrá el valor mágico\n\n", "¿Qué es un RFC?\n"},
     { &naiveChallenge, "itba\n", "The Wire S1E5\n5295 888 6288\n\n", "¿Qué diferencias hay entre TCP y UDP y en qué casos conviene usar cada uno?\n"},
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
@@ -50,21 +53,25 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &filterChallenge, "K5n2UFfpFMUN\n", "La respuesta es K5n2UFfpFMUN\n\n", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
     { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
     { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
-    { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha", "¿Cuáles son las características del protocolo SCTP?\n"},
-    { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"}
+    { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha", "¿Cuáles son las características del protocolo SCTP?\n"}
 };
 
 void doChallenges(int readFd){
-    void* childStackHead = malloc(CHILD_STACK_SIZE);
+    char* childStackHead = (char*)malloc(CHILD_STACK_SIZE);
+    if(childStackHead == NULL){
+        fprintf(stderr, "No memory available for challenge processing\n");
+        return;
+    }
     void* childStack = childStackHead + CHILD_STACK_SIZE - 1;
-    int childFd;
     int childStatus;
-    int nullTerminateIdx;
     char ofuscatedHint[MAX_READ_BYTES] = {0};
 
     srand((unsigned)time(NULL));
 
     while(current < CHALLENGE_AMOUNT){
+        int childFd;
+        int nullTerminateIdx;
+
         printf("------------- DESAFIO -------------\n");
 
         // challenge execution
@@ -75,10 +82,19 @@ void doChallenges(int readFd){
         close(pipefd[1]);
         waitpid(childFd, &childStatus, 0);
 
-        printf(ofuscatedHint);
+        printf("%s",ofuscatedHint);
         printf("----- PREGUNTA PARA INVESTIGAR -----\n");
-        printf(challenges[current].homeworkQuestion);
+        printf("%s",challenges[current].homeworkQuestion);
         nullTerminateIdx = read(readFd, userAnswer, MAX_READ_BYTES);
+
+        if(nullTerminateIdx == -1){
+            fprintf(stderr, "Error checking user response\n");
+            return;
+        }
+        if(nullTerminateIdx >= MAX_READ_BYTES){
+            nullTerminateIdx = MAX_READ_BYTES - 1;
+        }
+
         userAnswer[nullTerminateIdx] = 0;
         if(strcmp(userAnswer, challenges[current].answer) == 0) {
             current++;
@@ -117,7 +133,7 @@ int filterChallenge(){
     int dupErr = dup(2);
     char randCharArr[1];
 
-    for(int i=0 ; i < hintLen-2 ; i++){         // Doesn´t take into account \n\n
+    for(unsigned int i=0 ; i < hintLen-2 ; i++){         // Doesn´t take into account \n\n
         int randLen = (rand() % 5) + 4;
         for(int j=0 ; j < randLen ; j++){
             randCharArr[0] = (rand() % 94) + 32;
@@ -176,17 +192,28 @@ int gdbChallenge(){
 }
 
 int normalDistributionChallenge(){
-    size_t hintLen = strlen(challenges[current].hint)+1;        //
+    size_t hintLen = strlen(challenges[current].hint);        
     write(pipefd[1], challenges[current].hint, hintLen);
-    for (int i=0;i<NORMAL_DATAPOINTS;i++){
-        sprintf(pipefd[1], "%.6f ", randn(0, 1));
+    char buf[10];
+    printf("[DEBUG] before\n");
+    for(int i=0;i<1000;i++){
+        int len;
+        printf("[DEBUG] %d\n",i);
+        len = sprintf(buf, "%.6f ", randn(0, 1));
+        write(pipefd[1],buf,len);
     }
+    printf("[DEBUG] after\n");
+    write(pipefd[1],"\n",2);
     exit(0);
 }
 
 int diffChallenge(){
     size_t hintLen = strlen(challenges[current].hint)+1;        //
     FILE* quineFile = fopen("./quine.c", "r");
+    if(quineFile == NULL){
+        // Print quine not found
+        exit(0);
+    }
     char fileRead[500];
     fgets(fileRead, 500, quineFile);
     int diffResult = strcmp(quineAnswer, fileRead);
