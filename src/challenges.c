@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "include/challenges.h"
 
 #define CHILD_STACK_SIZE 36864
@@ -55,16 +57,21 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
 };
 
 void doChallenges(int readFd){
-    void* childStackHead = malloc(CHILD_STACK_SIZE);
+    char* childStackHead = (char*)malloc(CHILD_STACK_SIZE);
+    if(childStackHead == NULL){
+        fprintf(stderr, "No memory available for challenge processing\n");
+        return;
+    }
     void* childStack = childStackHead + CHILD_STACK_SIZE - 1;
-    int childFd;
     int childStatus;
-    int nullTerminateIdx;
     char ofuscatedHint[MAX_READ_BYTES] = {0};
 
     srand((unsigned)time(NULL));
 
     while(current < CHALLENGE_AMOUNT){
+        int childFd;
+        int nullTerminateIdx;
+
         printf("------------- DESAFIO -------------\n");
 
         // challenge execution
@@ -79,6 +86,15 @@ void doChallenges(int readFd){
         printf("----- PREGUNTA PARA INVESTIGAR -----\n");
         printf("%s",challenges[current].homeworkQuestion);
         nullTerminateIdx = read(readFd, userAnswer, MAX_READ_BYTES);
+
+        if(nullTerminateIdx == -1){
+            fprintf(stderr, "Error checking user response\n");
+            return;
+        }
+        if(nullTerminateIdx >= MAX_READ_BYTES){
+            nullTerminateIdx = MAX_READ_BYTES - 1;
+        }
+
         userAnswer[nullTerminateIdx] = 0;
         if(strcmp(userAnswer, challenges[current].answer) == 0) {
             current++;
@@ -179,21 +195,25 @@ int normalDistributionChallenge(){
     size_t hintLen = strlen(challenges[current].hint);        
     write(pipefd[1], challenges[current].hint, hintLen);
     char buf[10];
-    int len;
     printf("[DEBUG] before\n");
     for(int i=0;i<1000;i++){
+        int len;
         printf("[DEBUG] %d\n",i);
         len = sprintf(buf, "%.6f ", randn(0, 1));
         write(pipefd[1],buf,len);
     }
     printf("[DEBUG] after\n");
-    write(pipefd[1],"\n",5);
+    write(pipefd[1],"\n",2);
     exit(0);
 }
 
 int diffChallenge(){
     size_t hintLen = strlen(challenges[current].hint)+1;        //
     FILE* quineFile = fopen("./quine.c", "r");
+    if(quineFile == NULL){
+        // Print quine not found
+        exit(0);
+    }
     char fileRead[500];
     fgets(fileRead, 500, quineFile);
     int diffResult = strcmp(quineAnswer, fileRead);

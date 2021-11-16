@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "include/server.h"
 
 int main(){
@@ -38,36 +40,6 @@ int main(){
     }
 
     doChallenges(client.fd);
-
-    /*
-    printf("------------- DESAFIO -------------");
-    printf("\n");
-
-    printf("Bienvenidos al TP3 y felicitaciones, ya resolvieron el primer acertijo.\n"
-    "En este TP deberán finalizar el juego que ya comenzaron resolviendo los desafíos de cada nivel.\n"
-    "Además tendrán que investigar otras preguntas para responder durante la defensa.\n"
-    "El desafío final consiste en crear un programa que se comporte igual que yo, es decir, que provea los mismos desafíos "
-    "y que sea necesario hacer lo mismo para resolverlos. No basta con esperar la respuesta.\n"
-    "Además, deberán implementar otro programa para comunicarse conmigo\n\n"
-    "Deberán estar atentos a los easter eggs.\n\n"
-    "Para verificar que sus respuestas tienen el formato correcto respondan a este desafio con la palabra 'entendido\\n'\n");
-
-    printf("\n ----- PREGUNTA PARA INVESTIGAR -----");
-    printf("\n");
-    printf("¿Cómo descubrieron el protocolo, la dirección y el puerto para conectarse?\n");
-
-    if(fstat(client.fd, &file_stat) == -1){
-        fprintf(stderr, "Error retrieving file descriptor info\n");
-    }
-
-    read(client.fd, (void*)answer, MAX_READ_BYTES);
-    if(strncmp(answer, "entendido\n", MAX_READ_BYTES) != 0){
-        printf("RESPUESTA EQUIVOCADA\n");
-        printf("Respuesta ingresada: %s\n", answer);
-    }
-    else
-        printf("RESPUESTA CORRECTA\n");
-    */
 
     close(server.fd);
     close(client.fd);

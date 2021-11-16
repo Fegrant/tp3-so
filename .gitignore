@@ -1,6 +1,11 @@
 # Output folder
 bin
 
+# Pvs studio files
+*.log
+*.tasks
+strace_out
+
 # Prerequisites
 *.d
 
