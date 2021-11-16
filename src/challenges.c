@@ -51,7 +51,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &filterChallenge, "K5n2UFfpFMUN\n", "La respuesta es K5n2UFfpFMUN\n\n", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
     { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
     { &naiveChallenge, "u^v\n", "Latexme\n\nSi\n \\mathrm{d}y = u^v{\\cdot}\\ln{(u)}+v{\\cdot}\\frac{u'}{u})\nentonces\ny =\n\n", "sockets es un mecanismo de IPC. ¿Qué es más eficiente entre sockets y pipes?\n"},
-    { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha", "¿Cuáles son las características del protocolo SCTP?\n"},
+    { &diffChallenge, "chin_chu_lan_cha\n", "La respuesta es chin_chu_lan_cha\n\n", "¿Cuáles son las características del protocolo SCTP?\n"},
     { &gdbChallenge, "gdb_rules\n", "b gdbme y encontrá el valor mágico\n\n", "¿Qué es un RFC?\n"},
     { &normalDistributionChallenge, "normal\n", "Me conoces\n", "¿Fue divertido?\n"}
 };
@@ -207,17 +207,31 @@ int normalDistributionChallenge(){
 }
 
 int diffChallenge(){
-    size_t hintLen = strlen(challenges[current].hint)+1;        //
-    FILE* quineFile = fopen("./quine.c", "r");
-    if(quineFile == NULL){
-        // Print quine not found
-        exit(0);
+    size_t hintLen = strlen(challenges[current].hint)+1; 
+    write(pipefd[1], " \b", 2);       //
+    int pid1 = fork();
+    if (pid1 == 0){
+        return execlp("gcc", "gcc", "./quine.c", "-Wall", "-Wextra", "-g", "-std=c99", NULL);
+    } else if (pid1 > 0) {
+        int gccResult;
+        waitpid(pid1,&gccResult,0);
+        if (gccResult == 0){
+            int pid2 = fork();
+            if (pid2 == 0){
+                return execlp("diff", "diff", "./files/myquine.c", "./quine.c", NULL);
+            } else if (pid2 > 0){
+                int diffResult;
+                waitpid(pid2,&diffResult,0);
+                if (diffResult == 0){
+                    write(pipefd[1], challenges[current].hint, hintLen);
+                } else {
+                    write(pipefd[1], "\n", 2);
+                }
+            }
+        } else {
+            write(pipefd[1], "\n", 2);
+        }
     }
-    char fileRead[500];
-    fgets(fileRead, 500, quineFile);
-    int diffResult = strcmp(quineAnswer, fileRead);
-    if (diffResult == 0){
-        write(pipefd[1], challenges[current].hint, hintLen);
-    }
+    
     exit(0);
 }
