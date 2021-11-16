@@ -46,7 +46,7 @@ ChallengeStruct challenges[CHALLENGE_AMOUNT] = {
     { &naiveChallenge, "itba\n", "The Wire S1E5\n5295 888 6288\n\n", "¿Qué diferencias hay entre TCP y UDP y en qué casos conviene usar cada uno?\n"},
     { &naiveChallenge, "M4GFKZ289aku\n", "https://ibb.co/tc0Hb6w\n\n", "¿El puerto que usaron para conectarse al server es el mismo que usan para mandar las respuestas? ¿Por qué?\n"},
     { &badFileDescriptorChallenge, "fk3wfLCm3QvS\n", "................................La respuesta es fk3wfLCm3QvS\n", "¿Qué útil abstracción es utilizada para comunicarse con sockets? ¿Se puede utilizar read(2) y write(2) para operar?\n"},
-    { &naiveChallenge, "too_easy\n", "respuesta = strings:TBD\n\n", "¿Cómo garantiza TCP que los paquetes llegan en orden y no se pierden?\n"},
+    { &naiveChallenge, "too_easy\n", "respuesta = strings:488\n\n", "¿Cómo garantiza TCP que los paquetes llegan en orden y no se pierden?\n"},
     { &naiveChallenge, ".RUN_ME\n", ".init .plt .text ? .fini .rodata .eh_frame_hdr\n\n", "Un servidor suele crear un nuevo proceso o thread para atender las conexiones entrantes. ¿Qué conviene más?\n"},
     { &filterChallenge, "K5n2UFfpFMUN\n", "La respuesta es K5n2UFfpFMUN\n\n", "¿Cómo se puede implementar un servidor que atienda muchas conexiones sin usar procesos ni threads?\n"},
     { &hideAnswerChallenge, "BUmyYq5XxXGt\n", "¿?\n\nLa respuesta es BUmyYq5XxXGt\n\n", "¿Qué aplicaciones se pueden utilizar para ver el tráfico por la red?\n"},
@@ -106,7 +106,7 @@ void doChallenges(int readFd){
         memset(ofuscatedHint, 0, MAX_READ_BYTES);
         memset(userAnswer, 0, MAX_READ_BYTES);
     }
-    printf("Felicitaciones, finalizaron el juego. Ahora deberán implementar el servidor que se comporte como el servidor provisto\n");
+    printf("Felicitaciones, finalizaron el juego. Ahora deberán implementar el servidor que se comporte como el servidor provisto\n\n");
     free(childStackHead);
 }
 

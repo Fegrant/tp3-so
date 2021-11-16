@@ -17,7 +17,7 @@ OUTPUT_CLIENT=$(OUTPUT_FOLDER)/client
 all: $(OUTPUT_SERVER) $(OUTPUT_CLIENT)
 
 $(OUTPUT_SERVER): $(OBJECTS_SERVER) $(OBJECTS_ASM)
-	$(GCC) $(GCCFLAGS) -I$(INCLUDE_FOLDER) -o $@ $^ -lm -no-pie
+	$(GCC) $(GCCFLAGS) -I$(INCLUDE_FOLDER) -o $@ $^ -lm
 	@echo too_easy >> $(OUTPUT_SERVER)
 
 $(OUTPUT_CLIENT): $(SOURCES_CLIENT) 
@@ -36,9 +36,4 @@ clean:
 	rm -rf $(OUTPUT_FOLDER)/*
 	rm -rf $(SOURCES_FOLDER)/*.o
 
-pvs:
-	pvs-studio-analyzer trace -- make
-	pvs-studio-analyzer analyze
-	plog-converter -a '64:1,2,3;GA:1,2,3;OP:1,2,3' -t tasklist -o report.tasks PVS-Studio.log
-
-.PHONY: all clean install pvs
+.PHONY: all clean install
